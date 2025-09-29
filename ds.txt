@@ -1,0 +1,75 @@
+# Импортируем нужные библиотеки
+import sqlite3
+from datetime import datetime
+
+# Класс для работы с базой данных
+class NewsDatabase:
+    def init(self, db_name='news.db'):  # Исправлено: init
+        """
+        Конструктор класса. При создании объекта подключается к базе данных.
+        Если файла news.db нет, он создается автоматически.
+        """
+        self.connection = sqlite3.connect(db_name)
+        self.cursor = self.connection.cursor()
+        self.create_table()  # Сразу создаем таблицу
+
+    def create_table(self):
+        """
+        Создает таблицу 'news', если она еще не существует.
+        """
+        create_table_query = """
+        CREATE TABLE IF NOT EXISTS news (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source TEXT NOT NULL,
+            topic TEXT,
+            title TEXT NOT NULL,
+            text TEXT NOT NULL,
+            date DATE NOT NULL
+        );
+        """
+        self.cursor.execute(create_table_query)
+        self.connection.commit()
+        print("Таблица 'news' готова к работе!")
+
+    def insert_news(self, source, topic, title, text, date):
+        """
+        Вставляет одну новость в таблицу.
+
+        Args:
+            source (str): Источник новости (URL сайта).
+            topic (str): Тема новости (например, 'Финансы').
+            title (str): Заголовок новости.
+            text (str): Полный текст новости.
+            date (str): Дата в формате 'ГГГГ-ММ-ДД' (например, '2024-09-25').
+        """
+        insert_query = """
+        INSERT INTO news (source, topic, title, text, date)
+        VALUES (?, ?, ?, ?, ?)
+        """
+        # Выполняем запрос, подставляя значения вместо '?'
+        self.cursor.execute(insert_query, (source, topic, title, text, date))
+        self.connection.commit()
+        print(f"Новость '{title}' успешно добавлена в базу!")
+
+    def close_connection(self):
+        """Закрывает соединение с базой данных."""
+        self.connection.close()
+        print("Соединение с базой данных закрыто.")
+
+# Пример использования скрипта
+if name == "main":  # Исправлено: name
+    # 1. Создаем объект базы данных
+    db = NewsDatabase()
+
+    # 2. Пример: Добавляем тестовую новость
+    # (Парсеры Степы будут вызывать метод insert_news)
+    db.insert_news(
+        source="https://example.com/news/1",
+        topic="Финансы",
+        title="ЦБ повысил ключевую ставку",
+        text="Полный текст новости...",
+        date="2024-09-25"
+    )
+
+    # 3. Закрываем соединение когда работа закончена
+    db.close_connection()
